@@ -6,7 +6,9 @@ import trsHunterMeta from './assets/treasureHunter.json';
 import sounds from "./components/sounds.ts";
 import {Blobs} from './components/Blobs/Blobs.ts';
 import {HealthBar} from "./components/HealthBar.ts";
+import meta_icon from './assets/treasure.png';
 
+document.getElementById('meta-icon').href = meta_icon;
 //GLOBAL
 let state, dungeon, door, blobs, explorer: PIXI.Sprite, treasure, gameScene, gameOverScene, healtBar, message, sound;
 
@@ -223,7 +225,9 @@ function play(delta) {
         message.text = "You lost!";
 
         sounds.echoDngSound.stop();
-        sounds.badEndingSound.play();
+        sounds.punchSound.play();
+
+        setTimeout(sounds.badEndingSound.play(), 500);
         sounds.badEndingSound.volume(.5);
     }
 
