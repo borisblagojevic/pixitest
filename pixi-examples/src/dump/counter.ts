@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 export function setupCounter(element: HTMLButtonElement) {
   let counter = 0
   const setCounter = (count: number) => {

@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import * as PIXI from "pixi.js";
 import animalMeta from '../assets/animals.json';
 import animals from '../assets/animals.png';

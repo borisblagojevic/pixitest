@@ -1,5 +1,6 @@
-import * as PIXI from "pixi.js";
+// @ts-nocheck
 
+import * as PIXI from "pixi.js";
 import trsHunter from './assets/treasureHunter.png';
 import trsHunterMeta from './assets/treasureHunter.json';
 import sounds from "./components/sounds.ts";

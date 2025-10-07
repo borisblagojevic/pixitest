@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import {Sprite, type Texture} from "pixi.js";
 
 export class Blobs {

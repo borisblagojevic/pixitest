@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import {Howl, Howler} from 'howler';
 
 import echoDng from '../assets/sound/echo-dungeon-70538.mp3';

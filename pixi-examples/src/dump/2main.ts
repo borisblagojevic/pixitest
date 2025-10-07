@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { Application, Assets, Container, DisplacementFilter, RenderLayer, Sprite, TilingSprite } from 'pixi.js';
 import { Fish } from './components/Fish/Fish.ts';
 

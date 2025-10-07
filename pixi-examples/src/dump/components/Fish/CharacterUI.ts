@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { Container, Graphics, Text } from 'pixi.js';
 
 export class CharacterUI extends Container {

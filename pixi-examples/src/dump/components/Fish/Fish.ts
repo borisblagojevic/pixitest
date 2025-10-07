@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { Container, Sprite } from 'pixi.js';
 import { CharacterUI } from './CharacterUI.ts';
 
