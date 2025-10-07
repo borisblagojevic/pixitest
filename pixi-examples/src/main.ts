@@ -1,11 +1,13 @@
 import * as PIXI from "pixi.js";
+
 import trsHunter from './assets/treasureHunter.png';
 import trsHunterMeta from './assets/treasureHunter.json';
-import {Blobs} from './components/Blobs/Blobs.ts'
+import sounds from "./components/sounds.ts";
+import {Blobs} from './components/Blobs/Blobs.ts';
 import {HealthBar} from "./components/HealthBar.ts";
 
 //GLOBAL
-let state, dungeon, door, blobs, explorer: PIXI.Sprite, treasure, gameScene, gameOverScene, healtBar, message;
+let state, dungeon, door, blobs, explorer: PIXI.Sprite, treasure, gameScene, gameOverScene, healtBar, message, sound;
 
 // SETUP
 (async function setup() {
@@ -20,6 +22,15 @@ let state, dungeon, door, blobs, explorer: PIXI.Sprite, treasure, gameScene, gam
     globalThis.__PIXI_APP__ = app;
     document.body.appendChild(app.view);
 
+    sounds.doorCrackingSound.play();
+    sounds.doorCrackingSound.volume(.6);
+    sounds.successSound.stop();
+
+    setTimeout(() => {
+        sounds.doorCrackingSound.stop();
+        sounds.echoDngSound.play();
+        sounds.echoDngSound.volume(.1);
+    }, 2000);
 
     const spritesheet = new PIXI.Spritesheet(PIXI.BaseTexture.from(trsHunter), trsHunterMeta);
     await spritesheet.parse();
@@ -30,7 +41,9 @@ let state, dungeon, door, blobs, explorer: PIXI.Sprite, treasure, gameScene, gam
     treasure = new PIXI.Sprite(spritesheet.textures['treasure.png']);
 
 
-    state =  {};
+    state = {
+        treasure_drag: false
+    };
 
     gameScene = new PIXI.Container();
     gameOverScene = new PIXI.Container();
@@ -43,8 +56,8 @@ let state, dungeon, door, blobs, explorer: PIXI.Sprite, treasure, gameScene, gam
     door.position.set(32, 0);
     gameScene.addChild(door);
 
-    explorer.x = 68;
-    explorer.y = gameScene.height  / 2 - explorer.height / 2;
+    explorer.x = 35;
+    explorer.y = explorer.height;
     explorer.vx = 0;
     explorer.vy = 0;
     // gameScene.addChild();
@@ -91,51 +104,51 @@ let state, dungeon, door, blobs, explorer: PIXI.Sprite, treasure, gameScene, gam
         down = keyboard(40),
         enter = keyboard(13);
 
-    left.press = function() {
+    left.press = function () {
 
         explorer.vx = -5;
         explorer.vy = 0;
     };
 
-    left.release = function() {
+    left.release = function () {
 
         if (!right.isDown && explorer.vy === 0) {
             explorer.vx = 0;
         }
     };
 
-    up.press = function() {
+    up.press = function () {
         explorer.vy = -5;
         explorer.vx = 0;
     };
-    up.release = function() {
+    up.release = function () {
         if (!down.isDown && explorer.vx === 0) {
             explorer.vy = 0;
         }
     };
 
-    right.press = function() {
+    right.press = function () {
         explorer.vx = 5;
         explorer.vy = 0;
     };
-    right.release = function() {
+    right.release = function () {
         if (!left.isDown && explorer.vy === 0) {
             explorer.vx = 0;
         }
     };
 
-    down.press = function() {
+    down.press = function () {
         explorer.vy = 5;
         explorer.vx = 0;
     };
-    down.release = function() {
+    down.release = function () {
         if (!up.isDown && explorer.vx === 0) {
             explorer.vy = 0;
         }
     };
 
-    enter.press = function() {
-        if(state !== typeof play){
+    enter.press = function () {
+        if (state !== typeof play) {
             window.location.reload()
         }
     }
@@ -152,14 +165,15 @@ function gameLoop(delta) {
 
 function play(delta) {
 
-    explorer.x += explorer.vx;
-    explorer.y += explorer.vy;
+    explorer.x += state.treasure_drag ? explorer.vx / 2 : explorer.vx;
+    explorer.y += state.treasure_drag ? explorer.vy / 2 : explorer.vy;
 
     contain(explorer, {x: 28, y: 10, width: 488, height: 480});
 
-    let explorerHit = false;
+    let explorerHit: boolean = false;
+    // let id: number;
 
-    blobs.forEach(function(blob) {
+    blobs.forEach(function (blob) {
 
         //Move the blob
         blob.y += blob.vy;
@@ -173,23 +187,31 @@ function play(delta) {
 
 
         if (hitTestRectangle(explorer, blob)) {
+            // id = setTimeout(() => sounds.punchSound.play(), 10);
+
             explorerHit = true;
         }
     });
 
+
     if (explorerHit) {
+        // sounds.punchSound.play();
 
         explorer.alpha = 0.5;
 
-        healtBar.healthBar.outer.width -= 1;
+        healtBar.healthBar.outer.width -= 5;
 
     } else {
-
-        //Make the explorer fully opaque (non-transparent) if it hasn't been hit
         explorer.alpha = 1;
+
+        // sounds.punchSound.stop();
+
     }
 
     if (hitTestRectangle(explorer, treasure)) {
+        if (!state.treasure_drag) {
+            state.treasure_drag = true;
+        }
 
         treasure.x = explorer.x + 8;
         treasure.y = explorer.y + 8;
@@ -198,11 +220,19 @@ function play(delta) {
     if (healtBar.healthBar.outer.width < 0) {
         state = end;
         message.text = "You lost!";
+
+        sounds.echoDngSound.stop();
+        sounds.badEndingSound.play();
+        sounds.badEndingSound.volume(.5);
     }
 
     if (hitTestRectangle(treasure, door)) {
         state = end;
         message.text = "You won!";
+
+        sounds.echoDngSound.stop();
+        sounds.successSound.play();
+        sounds.successSound.volume(.5);
     }
 }
 
@@ -244,7 +274,6 @@ function contain(sprite: PIXI.Sprite, container: { x: any; y: any; width: any; h
 }
 
 function hitTestRectangle(r1, r2) {
-
     //Define the variables we'll need to calculate
     let hit, combinedHalfWidths, combinedHalfHeights, vx, vy;
 
@@ -291,10 +320,11 @@ function hitTestRectangle(r1, r2) {
     }
 
     //`hit` will be either `true` or `false`
+
     return hit;
 };
 
-function keyboard(keyCode:number) {
+function keyboard(keyCode: number) {
     const key = {};
     key.code = keyCode;
     key.isDown = false;
@@ -302,22 +332,34 @@ function keyboard(keyCode:number) {
     key.press = undefined;
     key.release = undefined;
 
-    key.downHandler = function(event:Event) {
+    key.downHandler = function (event: Event) {
         if (event.keyCode === key.code) {
             if (key.isUp && key.press) {
                 key.press();
+
+                if (!state.treasure_drag) {
+                    sounds.walkingSound.play();
+                    sounds.walkingSound.volume(.5);
+                } else {
+                    sounds.slidingSound.play();
+                    sounds.slidingSound.volume(1);
+                }
             }
             key.isDown = true;
             key.isUp = false;
         }
+
         event.preventDefault();
     };
 
     //The `upHandler`
-    key.upHandler = function(event: Event) {
+    key.upHandler = function (event: Event) {
         if (event.keyCode === key.code) {
             if (key.isDown && key.release) {
                 key.release();
+
+                sounds.walkingSound.stop();
+                sounds.slidingSound.stop();
             }
             key.isDown = false;
             key.isUp = true;
