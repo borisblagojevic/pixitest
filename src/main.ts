@@ -7,6 +7,7 @@ import sounds from "./components/sounds.ts";
 import {Blobs} from './components/Blobs/Blobs.ts';
 import {HealthBar} from "./components/HealthBar.ts";
 import meta_icon from './assets/treasure.png';
+import "./main.css";
 
 document.getElementById('meta-icon').href = meta_icon;
 //GLOBAL
@@ -327,7 +328,7 @@ function hitTestRectangle(r1, r2) {
     //`hit` will be either `true` or `false`
 
     return hit;
-};
+}
 
 function keyboard(keyCode: number) {
     const key = {};
